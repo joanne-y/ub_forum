@@ -11,5 +11,6 @@ type Forum struct {
 	CreatedAt time.Time `json:"-"`
 	Name      string    `json:"name"`
 	Message   string    `json:"message"`
+	User      string    `json:"user"`
 	Version   int32     `json:"version"`
 }
