@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"ubforum.joanneyong.net/internal/data"
+	"ubforum.joanneyong.net/internal/validator"
 )
 
 // createForumHandler for the "POST /v1/forums" endpoint
@@ -15,7 +16,6 @@ func (app *application) createForumHandler(w http.ResponseWriter, r *http.Reques
 	var input struct {
 		Name    string `json:"name"`
 		Message string `json:"message"`
-		User    string `json:"user"`
 	}
 	// Initialize a new json.Decoder instance
 	err := app.readJSON(w, r, &input)
@@ -23,6 +23,22 @@ func (app *application) createForumHandler(w http.ResponseWriter, r *http.Reques
 		app.badRequestResponse(w, r, err)
 		return
 	}
+
+	// Copy the values from the input struct to a new Forum struct
+	forum := &data.Forum{
+		Name:    input.Name,
+		Message: input.Message,
+	}
+
+	// Initialize a new Validator instance
+	v := validator.New()
+
+	// Check the map to determine if there were any validation errors
+	if data.ValidateForum(v, forum); !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
 	// Display the request
 	fmt.Fprintf(w, "%+v\n", input)
 }
@@ -39,16 +55,12 @@ func (app *application) showForumHandler(w http.ResponseWriter, r *http.Request)
 	forum := data.Forum{
 		ID:        id,
 		CreatedAt: time.Now(),
-		Name:      "UB nursing program",
-		Message:   "How is the nursing program at UB?",
-		User:      "Ella Morgan",
+		Name:      "The stock market",
+		Message:   "This is a post about the stock market.",
 		Version:   1,
 	}
 	err = app.writeJSON(w, http.StatusOK, envelope{"forum": forum}, nil)
 	if err != nil {
-		app.logger.Println(err)
-		http.Error(w, "The server encountered a problem and could not process your request", http.StatusInternalServerError)
 		app.serverErrorResponse(w, r, err)
 	}
-
 }
