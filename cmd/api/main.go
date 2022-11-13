@@ -11,6 +11,7 @@ import (
 	_ "github.com/lib/pq"
 	"ubforum.joanneyong.net/internal/data"
 	"ubforum.joanneyong.net/internal/jsonlog"
+	"ubforum.joanneyong.net/internal/mailer"
 )
 
 // The application version number
@@ -31,6 +32,13 @@ type config struct {
 		burst   int
 		enabled bool
 	}
+	smtp struct {
+		host     string
+		port     int
+		username string
+		password string
+		sender   string
+	}
 }
 
 // Dependency Injection
@@ -38,6 +46,7 @@ type application struct {
 	config config
 	logger *jsonlog.Logger
 	models data.Models
+	mailer mailer.Mailer
 }
 
 func main() {
@@ -50,10 +59,12 @@ func main() {
 	flag.IntVar(&cfg.db.maxIdleConns, "db-max-idle-conns", 25, "PostgreSQL max idle connections")
 	flag.StringVar(&cfg.db.maxIdleTime, "db-max-idle-time", "15m", "PostgreSQL max connection idle time")
 	// These are flags for the rate limiter
-	flag.Float64Var(&cfg.limiter.rps, "limiter-rps", 2, "Rate limiter maximum requests per second")
-	flag.IntVar(&cfg.limiter.burst, "limiter-burst", 4, "Rate limiter maximum burst")
-	flag.BoolVar(&cfg.limiter.enabled, "limiter-enabled", true, "Enable rate limiter")
-
+	// These are flags for the mailer
+	flag.StringVar(&cfg.smtp.host, "smtp-host", "smtp.mailtrap.io", "SMTP host")
+	flag.IntVar(&cfg.smtp.port, "smtp-port", 2525, "SMTP port")
+	flag.StringVar(&cfg.smtp.username, "smtp-username", "9393647b3b60c8", "SMTP username")
+	flag.StringVar(&cfg.smtp.password, "smtp-password", "b515e496d38c2f", "SMTP password")
+	flag.StringVar(&cfg.smtp.sender, "smtp-sender", "UBforum <no-reply@ubforum.joanneyong.net>", "SMTP sender")
 	flag.Parse()
 	// Create a logger
 	logger := jsonlog.New(os.Stdout, jsonlog.LevelInfo)
@@ -71,6 +82,7 @@ func main() {
 		config: cfg,
 		logger: logger,
 		models: data.NewModels(db),
+		mailer: mailer.New(cfg.smtp.host, cfg.smtp.port, cfg.smtp.username, cfg.smtp.password, cfg.smtp.sender),
 	}
 	// Call app.serve() to start the server
 	err = app.serve()
