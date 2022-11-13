@@ -1,4 +1,4 @@
--- Filename: migrations/000006_create_tokens_table.up.sql
+-- Filename: migrations/000005_create_tokens_table.up.sql
 
 CREATE TABLE IF NOT EXISTS tokens (
     hash bytea PRIMARY KEY,

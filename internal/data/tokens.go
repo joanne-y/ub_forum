@@ -34,8 +34,8 @@ func generateToken(userID int64, ttl time.Duration, scope string) (*Token, error
 		Expiry: time.Now().Add(ttl),
 		Scope:  scope,
 	}
-	// Create a byte slice to hold random values and fill with values
-	// from CSPRNG
+	// Create a byte slice to hold random values and fill it with values
+	// from CSPRING
 	randomBytes := make([]byte, 16)
 	_, err := rand.Read(randomBytes)
 	if err != nil {
@@ -50,7 +50,7 @@ func generateToken(userID int64, ttl time.Duration, scope string) (*Token, error
 	return token, nil
 }
 
-// Check that the plaintest token is  26 bytes long
+// Check that the plaintext token is  26 bytes long
 func ValidateTokenPlainText(v *validator.Validator, tokenPlaintext string) {
 	v.Check(tokenPlaintext != "", "token", "must be 26 bytes long")
 	v.Check(len(tokenPlaintext) == 26, "token", "must be 26 bytes long")

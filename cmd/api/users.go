@@ -80,6 +80,7 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 	}
 }
 
+// Activating a user
 func (app *application) activateUserHandler(w http.ResponseWriter, r *http.Request) {
 	// Parse the plaintext activation token
 	var input struct {
@@ -112,7 +113,7 @@ func (app *application) activateUserHandler(w http.ResponseWriter, r *http.Reque
 	}
 	// Update the user status
 	user.Activated = true
-	// Save the updated user's record in our database
+	// Save the updated user's record in the database
 	err = app.models.Users.Update(user)
 	if err != nil {
 		switch {
@@ -123,7 +124,7 @@ func (app *application) activateUserHandler(w http.ResponseWriter, r *http.Reque
 		}
 		return
 	}
-	//Delete the user's token that was used for activation
+	// Delete the user's token that was used for activation
 	err = app.models.Tokens.DeleteAllForUsers(data.ScopeActivation, user.ID)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
