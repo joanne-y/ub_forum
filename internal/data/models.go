@@ -1,5 +1,4 @@
 // Filename: internal/data/models.go
-
 package data
 
 import (

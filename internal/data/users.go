@@ -1,5 +1,4 @@
 // Filename: internal/data/users.go
-
 package data
 
 import (
@@ -41,7 +40,6 @@ func (p *password) Set(plaintextPassword string) error {
 	}
 	p.plaintext = &plaintextPassword
 	p.hash = hash
-
 	return nil
 }
 
@@ -64,13 +62,11 @@ func ValidateEmail(v *validator.Validator, email string) {
 	v.Check(email != "", "email", "must be provided")
 	v.Check(validator.Matches(email, validator.EmailRX), "email", "must be a valid email address")
 }
-
 func ValidatePasswordPlaintext(v *validator.Validator, password string) {
 	v.Check(password != "", "password", "must be provided")
 	v.Check(len(password) >= 8, "password", "must be at least 8 bytes long")
 	v.Check(len(password) <= 72, "password", "must not be more than 72 bytes long")
 }
-
 func ValidateUser(v *validator.Validator, user *User) {
 	v.Check(user.Name != "", "name", "must be provided")
 	v.Check(len(user.Name) <= 500, "name", "must not be more than 500 bytes long")
@@ -105,7 +101,6 @@ func (m UserModel) Insert(user *User) error {
 		user.Password.hash,
 		user.Activated,
 	}
-
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 	err := m.DB.QueryRowContext(ctx, query, args...).Scan(&user.ID, &user.CreatedAt, &user.Version)
@@ -128,7 +123,6 @@ func (m UserModel) GetByEmail(email string) (*User, error) {
 		WHERE email = $1
 	`
 	var user User
-
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 	err := m.DB.QueryRowContext(ctx, query, email).Scan(
@@ -216,5 +210,5 @@ func (m UserModel) GetForToken(tokenScope, tokenPlaintext string) (*User, error)
 			return nil, err
 		}
 	}
-	return nil, err
+	return &user, nil
 }

@@ -1,5 +1,4 @@
 // Filename: cmd/api/users.go
-
 package main
 
 import (
@@ -18,7 +17,6 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
-
 	// Parse the request body into the anonymous struct
 	err := app.readJSON(w, r, &input)
 	if err != nil {
@@ -68,13 +66,13 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 			"userID":          user.ID,
 		}
 		// Send the email to the new user
+		err = app.mailer.Send(user.Email, "user_welcome.tmpl", user)
 		err = app.mailer.Send(user.Email, "user_welcome.tmpl", data)
 		if err != nil {
 			// log errors
 			app.logger.PrintError(err, nil)
 		}
 	})
-
 	// Write a 202 Accepted Status
 	err = app.writeJSON(w, http.StatusAccepted, envelope{"user": user}, nil)
 	if err != nil {
@@ -82,7 +80,6 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 	}
 }
 
-// Activating a user
 func (app *application) activateUserHandler(w http.ResponseWriter, r *http.Request) {
 	// Parse the plaintext activation token
 	var input struct {
@@ -95,12 +92,13 @@ func (app *application) activateUserHandler(w http.ResponseWriter, r *http.Reque
 	}
 	// Perform validation
 	v := validator.New()
-	if data.ValidateTokenPlaintext(v, input.TokenPlaintext); !v.Valid() {
+	if data.ValidateTokenPlainText(v, input.TokenPlaintext); !v.Valid() {
 		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
 	// Get the user details of the provided token or give the
 	// client feedback about an invalid token
+
 	user, err := app.models.Users.GetForToken(data.ScopeActivation, input.TokenPlaintext)
 	if err != nil {
 		switch {
@@ -114,7 +112,7 @@ func (app *application) activateUserHandler(w http.ResponseWriter, r *http.Reque
 	}
 	// Update the user status
 	user.Activated = true
-	// Save the updated user's record in the database
+	// Save the updated user's record in our database
 	err = app.models.Users.Update(user)
 	if err != nil {
 		switch {
@@ -125,15 +123,17 @@ func (app *application) activateUserHandler(w http.ResponseWriter, r *http.Reque
 		}
 		return
 	}
-	// Delete the user's token that was used for activation
+	//Delete the user's token that was used for activation
 	err = app.models.Tokens.DeleteAllForUsers(data.ScopeActivation, user.ID)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
+
 	}
-	// Send a JSON response with the update details
+	// Send a JSON response with the updated detals
 	err = app.writeJSON(w, http.StatusOK, envelope{"user": user}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
+
 }
