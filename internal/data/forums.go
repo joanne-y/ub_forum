@@ -40,16 +40,14 @@ func (m ForumModel) Insert(forum *Forum) error {
 		VALUES ($1, $2)
 		RETURNING id, created_at, version
 	`
-
-	// Create a context
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	// Cleanup to prevent memory leaks
-	defer cancel()
-
 	// Collect the data fields into a slice
 	args := []interface{}{
 		forum.Name, forum.Message,
 	}
+	// Create a context
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	// Cleanup to prevent memory leaks
+	defer cancel()
 	return m.DB.QueryRowContext(ctx, query, args...).Scan(&forum.ID, &forum.CreatedAt, &forum.Version)
 }
 
@@ -104,18 +102,16 @@ func (m ForumModel) Update(forum *Forum) error {
 		AND version = $4
 		RETURNING version
 	`
-
-	// Create a context
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	// Cleanup to prevent memory leaks
-	defer cancel()
-
 	args := []interface{}{
 		forum.Name,
 		forum.Message,
 		forum.ID,
 		forum.Version,
 	}
+	// Create a context
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	// Cleanup to prevent memory leaks
+	defer cancel()
 	// Check for edit conflicts
 	err := m.DB.QueryRowContext(ctx, query, args...).Scan(&forum.Version)
 	if err != nil {
