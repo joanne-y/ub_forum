@@ -64,8 +64,8 @@ func main() {
 	// These are flags for the mailer
 	flag.StringVar(&cfg.smtp.host, "smtp-host", "smtp.mailtrap.io", "SMTP host")
 	flag.IntVar(&cfg.smtp.port, "smtp-port", 2525, "SMTP port")
-	flag.StringVar(&cfg.smtp.username, "smtp-username", "9393647b3b60c8", "SMTP username")
-	flag.StringVar(&cfg.smtp.password, "smtp-password", "b515e496d38c2f", "SMTP password")
+	flag.StringVar(&cfg.smtp.username, "smtp-username", "828352fbf5560b", "SMTP username")
+	flag.StringVar(&cfg.smtp.password, "smtp-password", "9616ffbf8b5bad", "SMTP password")
 	flag.StringVar(&cfg.smtp.sender, "smtp-sender", "UBforum <no-reply@ubforum.joanneyong.net>", "SMTP sender")
 	flag.Parse()
 	// Create a logger
